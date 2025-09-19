@@ -9,7 +9,7 @@
 
 typedef struct {
     char name[MAX_NAME];
-    int votes;
+    int votes; //changing the comment section
 } Candidate;
 
 static Candidate candidates[MAX_CANDIDATES];
