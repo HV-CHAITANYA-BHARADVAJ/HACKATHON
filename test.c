@@ -7,7 +7,7 @@
 #define MAX_NAME 64
 #define INPUT_BUF 128
 
-typedef struct {
+typedef struct { //changes
     char name[MAX_NAME];
     int votes;
 } Candidate;
