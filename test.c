@@ -133,7 +133,7 @@ int main(void) {
             case 0:
                 printf("Exiting.\n");
                 return 0;
-            default:
+            default://linenumberchanged
                 printf("Invalid option.\n");
         }
     }
