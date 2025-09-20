@@ -16,8 +16,8 @@ class CryptoMonitor(threading.Thread):
         self.thresholds = thresholds
         self.currency = currency
         self.interval = interval
-        self.telegram_token = telegram_token
-        self.telegram_chat_id = telegram_chat_id
+        self.telegram_token = "7644983400:AAFgDmVICv6u2DQXxIA2pbQ58FhjC75Kx1s"
+        self.telegram_chat_id = 2070881390
         self.on_alert = on_alert
         self._stop_event = threading.Event()
 

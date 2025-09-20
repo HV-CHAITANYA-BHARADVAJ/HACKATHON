@@ -5,7 +5,7 @@ from telegram import Bot
 # --- USER CONFIGURATION ---
 
 TELEGRAM_TOKEN = "7644983400:AAFgDmVICv6u2DQXxIA2pbQ58FhjC75Kx1s"
-TELEGRAM_CHAT_ID = "@Cryt0Alert_Bot"  # Use your user ID, group/channel numeric ID, or username as a string
+TELEGRAM_CHAT_ID = 2070881390  # Use your user ID, group/channel numeric ID, or username as a string
 
 COINS = {
     'bitcoin': {'threshold_up': 45000, 'threshold_down': 40000},
@@ -29,7 +29,7 @@ def get_prices(coin_ids, currency):
     return response.json()
 
 def send_telegram_message(bot, chat_id, message):
-    bot.send_message(chat_id=chat_id, text=message)
+    bot.send_message(chat_id=2070881390, text="NEW ALERT!\n")
 
 def main():
     bot = Bot(token=TELEGRAM_TOKEN)
