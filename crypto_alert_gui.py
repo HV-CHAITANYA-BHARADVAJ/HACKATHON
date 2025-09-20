@@ -3,26 +3,47 @@ from tkinter import ttk, messagebox
 import threading
 import requests
 import time
-
-# --- Telegram and CoinGecko functionality ---
+import asyncio
 from telegram import Bot
 
 COINGECKO_API_URL = "https://api.coingecko.com/api/v3/simple/price"
 
+# --- Your Telegram details ---
+TELEGRAM_TOKEN = "7644983400:AAFgDmVICv6u2DQXxIA2pbQ58FhjC75Kx1s"
+TELEGRAM_CHAT_ID = "2070881390"
+
 class CryptoMonitor(threading.Thread):
-    def __init__(self, coins, thresholds, currency, interval, telegram_token, telegram_chat_id, on_alert):
+    def __init__(self, coins, thresholds, currency, interval, on_alert):
         super().__init__()
         self.coins = coins
         self.thresholds = thresholds
         self.currency = currency
         self.interval = interval
-        self.telegram_token = telegram_token
-        self.telegram_chat_id = telegram_chat_id
         self.on_alert = on_alert
         self._stop_event = threading.Event()
+        self.bot = Bot(token=TELEGRAM_TOKEN)
+        self.loop = asyncio.new_event_loop()
+        threading.Thread(target=self.loop.run_forever, daemon=True).start()
+
+    def get_prices(self, coin_ids, currency):
+        params = {
+            'ids': ','.join(coin_ids),
+            'vs_currencies': currency
+        }
+        resp = requests.get(COINGECKO_API_URL, params=params, timeout=10)
+        resp.raise_for_status()
+        return resp.json()
+
+    async def send_telegram_message_async(self, message):
+        await self.bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
+
+    def send_telegram_message(self, message):
+        asyncio.run_coroutine_threadsafe(
+            self.send_telegram_message_async(message),
+            self.loop
+        )
 
     def run(self):
-        bot = Bot(token=self.telegram_token)
         last_status = {coin: None for coin in self.coins}
         while not self._stop_event.is_set():
             try:
@@ -35,12 +56,12 @@ class CryptoMonitor(threading.Thread):
                     down = float(self.thresholds[coin]['down'])
                     if price >= up and last_status[coin] != 'up':
                         msg = f"🚀 {coin.title()} is above {up} {self.currency.upper()}! (Current: {price})"
-                        bot.send_message(chat_id=self.telegram_chat_id, text=msg)
+                        self.send_telegram_message(msg)
                         self.on_alert(msg)
                         last_status[coin] = 'up'
                     elif price <= down and last_status[coin] != 'down':
                         msg = f"🔻 {coin.title()} is below {down} {self.currency.upper()}! (Current: {price})"
-                        bot.send_message(chat_id=self.telegram_chat_id, text=msg)
+                        self.send_telegram_message(msg)
                         self.on_alert(msg)
                         last_status[coin] = 'down'
                     elif down < price < up:
@@ -50,19 +71,13 @@ class CryptoMonitor(threading.Thread):
                 self.on_alert(f"Error: {e}")
                 time.sleep(self.interval)
 
-    def get_prices(self, coin_ids, currency):
-        params = {
-            'ids': ','.join(coin_ids),
-            'vs_currencies': currency
-        }
-        resp = requests.get(COINGECKO_API_URL, params=params, timeout=10)
-        resp.raise_for_status()
-        return resp.json()
-
     def stop(self):
         self._stop_event.set()
+        try:
+            self.loop.call_soon_threadsafe(self.loop.stop)
+        except Exception:
+            pass
 
-# --- Tkinter UI ---
 class CryptoAlertApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -104,13 +119,9 @@ class CryptoAlertApp(tk.Tk):
         self.interval_var = tk.IntVar(value=60)
         ttk.Entry(options_frame, textvariable=self.interval_var, width=8).grid(row=0, column=3)
 
-        # Telegram credentials
-        ttk.Label(self, text="Telegram Bot Token:").pack(pady=(12,2))
-        self.token_var = tk.StringVar()
-        ttk.Entry(self, textvariable=self.token_var, width=50, show="*").pack()
-        ttk.Label(self, text="Telegram Chat ID:").pack(pady=(8,2))
-        self.chatid_var = tk.StringVar()
-        ttk.Entry(self, textvariable=self.chatid_var, width=40).pack()
+        # Show Telegram details as info (since they're hardcoded)
+        ttk.Label(self, text=f"Telegram Chat ID: {TELEGRAM_CHAT_ID}").pack(pady=(12,2))
+        ttk.Label(self, text=f"Bot Token: {TELEGRAM_TOKEN[:8]}... (hidden)").pack(pady=(0,4))
 
         # Start/stop and log output
         self.status_var = tk.StringVar(value="Status: Idle")
@@ -148,18 +159,13 @@ class CryptoAlertApp(tk.Tk):
                 messagebox.showwarning("Invalid Threshold", f"Thresholds for {coin.title()} must be numbers.")
                 return
             thresholds[coin] = {'up': up, 'down': down}
-        token = self.token_var.get().strip()
-        chatid = self.chatid_var.get().strip()
-        if not token or not chatid:
-            messagebox.showwarning("Telegram", "Please enter Telegram bot token and chat ID.")
-            return
         interval = self.interval_var.get()
         if interval < 10:
             messagebox.showwarning("Interval", "Interval should be at least 10 seconds.")
             return
         self.monitor_thread = CryptoMonitor(
             coins, thresholds, self.currency_var.get().strip().lower(), interval,
-            token, chatid, self.log_alert
+            self.log_alert
         )
         self.monitor_thread.daemon = True
         self.monitor_thread.start()

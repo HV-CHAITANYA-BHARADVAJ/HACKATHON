@@ -210,3 +210,4 @@ Available Commands:
     except Exception as e:
         print(f"Error processing Telegram update: {e}")
         return https_fn.Response('Error processing request', status=500)
+    
