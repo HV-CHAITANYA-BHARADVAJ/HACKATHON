@@ -2,13 +2,12 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import threading
 import requests
-import time
+import time 
 import asyncio
 from telegram import Bot
 
 COINGECKO_API_URL = "https://api.coingecko.com/api/v3/simple/price"
-
-# --- Your Telegram details ---
+#tele detail
 TELEGRAM_TOKEN = "7644983400:AAFgDmVICv6u2DQXxIA2pbQ58FhjC75Kx1s"
 TELEGRAM_CHAT_ID = "2070881390"
 
@@ -82,10 +81,10 @@ class CryptoAlertApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Crypto Price Alert")
-        self.geometry("500x500") # Adjusted the window height
+        self.geometry("500x500") 
         self.resizable(False, False)
 
-        # Coin selection and thresholds
+        
         self.coin_vars = {}
         self.threshold_vars = {}
         self.available_coins = ["bitcoin", "ethereum", "dogecoin", "solana", "cardano", "ripple", "litecoin"]
@@ -110,7 +109,6 @@ class CryptoAlertApp(tk.Tk):
             ttk.Label(frame, text="Down:").grid(row=0, column=3)
             ttk.Entry(frame, textvariable=down_var, width=8).grid(row=0, column=4)
 
-        # Currency & interval
         options_frame = ttk.Frame(self)
         options_frame.pack(pady=10)
         ttk.Label(options_frame, text="Currency:").grid(row=0, column=0)
@@ -119,7 +117,7 @@ class CryptoAlertApp(tk.Tk):
         self.interval_var = tk.IntVar(value=60)
         ttk.Entry(options_frame, textvariable=self.interval_var, width=8).grid(row=0, column=3)
 
-        # Start/stop and log output
+      
         self.status_var = tk.StringVar(value="Status: Idle")
         ttk.Label(self, textvariable=self.status_var, foreground="blue").pack(pady=6)
         btn_frame = ttk.Frame(self)
@@ -129,7 +127,7 @@ class CryptoAlertApp(tk.Tk):
         self.stop_btn = ttk.Button(btn_frame, text="Stop", command=self.stop_monitoring, state="disabled")
         self.stop_btn.grid(row=0, column=1, padx=5)
 
-        # Log
+        
         ttk.Label(self, text="Alerts Log:").pack()
         self.log_text = tk.Text(self, height=10, width=60, state="disabled", bg="#f3f3f3")
         self.log_text.pack()
