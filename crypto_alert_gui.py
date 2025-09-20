@@ -82,7 +82,7 @@ class CryptoAlertApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Crypto Price Alert")
-        self.geometry("500x560")
+        self.geometry("500x500") # Adjusted the window height
         self.resizable(False, False)
 
         # Coin selection and thresholds
@@ -118,10 +118,6 @@ class CryptoAlertApp(tk.Tk):
         ttk.Label(options_frame, text="Check every (sec):").grid(row=0, column=2)
         self.interval_var = tk.IntVar(value=60)
         ttk.Entry(options_frame, textvariable=self.interval_var, width=8).grid(row=0, column=3)
-
-        # Show Telegram details as info (since they're hardcoded)
-        ttk.Label(self, text=f"Telegram Chat ID: {TELEGRAM_CHAT_ID}").pack(pady=(12,2))
-        ttk.Label(self, text=f"Bot Token: {TELEGRAM_TOKEN[:8]}... (hidden)").pack(pady=(0,4))
 
         # Start/stop and log output
         self.status_var = tk.StringVar(value="Status: Idle")
